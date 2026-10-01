@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from psycopg2.extras import RealDictCursor
 
 from databasebackend import get_db
 from security import decode_token
@@ -20,9 +21,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
         raise HTTPException(status_code=401, detail="Token rusak")
 
     with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user = cur.fetchone()
+        cur.close()
 
     if not user:
         raise HTTPException(status_code=401, detail="User gak ada")
