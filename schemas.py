@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Generic, TypeVar, List
+from datetime import datetime
 
 T = TypeVar("T")
 
@@ -27,3 +28,11 @@ class MetaPagination(BaseModel):
 class PageResponse(BaseModel, Generic[T]):
     meta: MetaPagination
     data: List[T]
+
+class UserResponse(BaseModel):
+    id: int
+    kode: str
+    name: str
+    email: str
+    role: str
+    created_at: datetime | None = None
