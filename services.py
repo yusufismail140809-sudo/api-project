@@ -67,7 +67,9 @@ class UserService:
         return {"id": user_id, "kode": f"USR-{user_id:03d}", "name": name, "email": email}
 
     # --- UPDATE (full) ---
-    def update_user(self, user_id: int, name: str, email: str) -> dict:
+    def update_user(self, user_id: int, name: str, email: str, requester: dict) -> dict:
+        if requester["id"] != user_id and requester.get("role") != "admin":
+            raise UserServiceError("Gak boleh update user lain", 403)
         existing = self.repo.get_by_id(user_id)
         if not existing:
             raise UserServiceError("User gak ketemu", 404)
@@ -106,3 +108,9 @@ class UserService:
 
         self.repo.delete(user_id)
         return user
+
+    def get_stats(self) -> dict:
+        stats = self.repo.count_stats()
+        admin = stats.get("total_admins", 0)
+        regular_users = stats.get("total_regular_users", 0)
+        return {"total_admin": admin, "total_users": stats["total_users"], "regular_users": regular_users}

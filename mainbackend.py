@@ -41,6 +41,12 @@ def get_users(
         result = svc.list_users(page, size, search)
     return result
 
+@app.get("/users/stats")
+def get_user_stats():
+    with get_db() as conn:
+        svc = UserService(conn)
+        stats = svc.get_stats()
+    return stats
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 def get_user_by_id(user_id: int):
@@ -62,8 +68,9 @@ def get_user_email(user_id: int):
             _handle(e)
     return {"email": user["email"]}
 
-@app.post("/users", status_code=201)
-def create_user(user: UserCreate):
+
+@app.post("/users", status_code=201, response_model=UserResponse)
+def create_user(user: UserCreate, current=Depends(get_current_user)):
     with get_db() as conn:
         svc = UserService(conn)
         try:
@@ -73,26 +80,26 @@ def create_user(user: UserCreate):
     return {"message": "User dibuat", "data": data}
 
 
-@app.put("/users/{user_id}")
-def update_user(user_id: int, user: UserCreate):
+@app.put("/users/{user_id}", response_model=UserResponse)
+def update_user(user_id: int, user: UserCreate, current=Depends(get_current_user)):
     with get_db() as conn:
         svc = UserService(conn)
         try:
-            updated = svc.update_user(user_id, user.name, user.email)
+            updated = svc.update_user(user_id, user.name, user.email, current)
         except UserServiceError as e:
             _handle(e)
-    return {"updated": updated}
+    return update
 
 
-@app.patch("/users/{user_id}")
-def patch_user(user_id: int, user: UserUpdate):
+@app.patch("/users/{user_id}", response_model=UserResponse)
+def patch_user(user_id: int, user: UserUpdate, current=Depends(get_current_user)):
     with get_db() as conn:
         svc = UserService(conn)
         try:
-            updated = svc.patch_user(user_id, user.name, user.email)
+            updated = svc.patch_user(user_id, user.name, user.email, current)
         except UserServiceError as e:
             _handle(e)
-    return {"updated": updated}
+    return update
 
 
 @app.delete("/users/{user_id}")

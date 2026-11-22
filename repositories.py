@@ -24,6 +24,21 @@ class UserRepository:
         cur.close()
         return dict(row) if row else None
 
+    def count_stats(self) -> Dict[str, int]:
+        cur = self._cursor()
+        cur.execute(
+            """
+            SELECT
+                COUNT(*) AS total_users,
+                COUNT(CASE WHEN role = 'admin' THEN 1 END) AS total_admins,
+                COUNT(CASE WHEN role = 'user' THEN 1 END) AS total_regular_users
+            FROM users
+            """
+        )
+        stats = cur.fetchone()
+        cur.close()
+        return dict(stats)
+
     def list_paginated(
         self,
         page: int = 1,
