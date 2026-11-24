@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from databasebackend import get_db, init_db
 from deps import get_current_user
-from schemas import MetaPagination, PageResponse, UserResponse
+from schemas import MetaPagination, PageResponse, UserResponse, UserSingleResponse
 from services import UserService, UserServiceError
 
 app = FastAPI(title="Belajar Backend", version="3.2")
@@ -69,7 +69,7 @@ def get_user_email(user_id: int):
     return {"email": user["email"]}
 
 
-@app.post("/users", status_code=201, response_model=UserResponse)
+@app.post("/users", status_code=201, response_model=UserSingleResponse)
 def create_user(user: UserCreate, current=Depends(get_current_user)):
     with get_db() as conn:
         svc = UserService(conn)
@@ -77,7 +77,7 @@ def create_user(user: UserCreate, current=Depends(get_current_user)):
             data = svc.create_user(user.name, user.email)
         except UserServiceError as e:
             _handle(e)
-    return data
+    return {"data": data}
 
 
 @app.put("/users/{user_id}", response_model=UserResponse)

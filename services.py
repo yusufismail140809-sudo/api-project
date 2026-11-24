@@ -64,7 +64,7 @@ class UserService:
         if self.repo.get_by_email(email):
             raise UserServiceError("Email udah dipake", 400)
         user_id = self.repo.create(name=name, email=email)
-        return {"id": user_id, "kode": f"USR-{user_id:03d}", "name": name, "email": email}
+        return self.repo.get_by_id(user_id)
 
     # --- UPDATE (full) ---
     def update_user(self, user_id: int, name: str, email: str, requester: dict) -> dict:
