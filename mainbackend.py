@@ -77,7 +77,7 @@ def create_user(user: UserCreate, current=Depends(get_current_user)):
             data = svc.create_user(user.name, user.email)
         except UserServiceError as e:
             _handle(e)
-    return {"message": "User dibuat", "data": data}
+    return data
 
 
 @app.put("/users/{user_id}", response_model=UserResponse)
@@ -88,7 +88,7 @@ def update_user(user_id: int, user: UserCreate, current=Depends(get_current_user
             updated = svc.update_user(user_id, user.name, user.email, current)
         except UserServiceError as e:
             _handle(e)
-    return update
+    return updated
 
 
 @app.patch("/users/{user_id}", response_model=UserResponse)
@@ -99,7 +99,7 @@ def patch_user(user_id: int, user: UserUpdate, current=Depends(get_current_user)
             updated = svc.patch_user(user_id, user.name, user.email, current)
         except UserServiceError as e:
             _handle(e)
-    return update
+    return updated
 
 
 @app.delete("/users/{user_id}")

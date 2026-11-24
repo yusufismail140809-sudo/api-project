@@ -88,7 +88,10 @@ class UserService:
         user_id: int,
         name: Optional[str] = None,
         email: Optional[str] = None,
+        requester: dict = None,
     ) -> dict:
+        if requester["id"] != user_id and requester.get("role") != "admin":
+            raise UserServiceError("Gak boleh update user lain", 403)
         if email:
             other = self.repo.get_by_email(email)
             if other and other["id"] != user_id:
