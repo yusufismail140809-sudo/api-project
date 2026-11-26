@@ -5,6 +5,7 @@ from databasebackend import get_db
 from schemas import UserRegister, TokenResponse
 from services import UserService, UserServiceError
 from deps import get_current_user
+from schemas import UserRegister, TokenResponse, ChangePasswordRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -44,3 +45,20 @@ def get_me(current_user: dict = Depends(get_current_user)):
         "email": current_user["email"],
         "role": current_user["role"],
     }
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    with get_db() as conn:
+        svc = UserService(conn)
+        try:
+            message = svc.change_password(
+                current_user["id"],
+                payload.old_password,
+                payload.new_password,
+            )
+        except UserServiceError as e:
+            _handle(e)
+    return {"message": message}

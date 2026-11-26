@@ -122,3 +122,14 @@ class UserRepository:
         cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
         cur.close()
         return True
+
+    def update_password(self, user_id: int, new_password_hash: str) -> bool:
+        """Update password_hash user. Return True kalau ada yang di-update."""
+        cur = self._cursor()
+        cur.execute(
+            "UPDATE users SET password_hash = %s WHERE id = %s",
+            (new_password_hash, user_id),
+        )
+        updated = cur.rowcount > 0
+        cur.close()
+        return updated

@@ -37,6 +37,34 @@ class UserService:
             raise UserServiceError("Kredensial tidak valid", 401)
         return create_access_token({"sub": str(user["id"]), "role": user["role"]})
 
+    # --- CHANGE PASSWORD ---
+    def change_password(self, user_id: int, old_password: str, new_password: str) -> str:
+        """
+        Ganti password user.
+        - Verifikasi old_password cocok dengan hash di DB.
+        - Hash new_password, simpan ke DB.
+        Return: pesan sukses (str).
+        Raise: UserServiceError kalau user gak ada / old_password salah.
+        """
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise UserServiceError("User gak ketemu", 404)
+
+        if not user.get("password_hash"):
+            raise UserServiceError("User ini gak punya password (dibuat admin?)", 400)
+
+        if not verify_password(old_password, user["password_hash"]):
+            raise UserServiceError("Password lama salah", 401)
+
+        if old_password == new_password:
+            raise UserServiceError("Password baru gak boleh sama dengan password lama", 400)
+
+        new_hash = hash_password(new_password)
+        if not self.repo.update_password(user_id, new_hash):
+            raise UserServiceError("Gagal update password", 500)
+
+        return "Password berhasil diubah"
+
     # --- LIST (pagination) ---
     def list_users(self, page: int, size: int, search: str) -> dict:
         rows, total = self.repo.list_paginated(page, size, search)
