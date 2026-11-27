@@ -88,7 +88,9 @@ class UserService:
         return user
 
     # --- CREATE (admin-style, tanpa password) ---
-    def create_user(self, name: str, email: str) -> dict:
+    def create_user(self, name: str, email: str, requester: dict) -> dict:
+        if requester.get("role") != "admin":
+            raise UserServiceError("Cuma admin yang boleh bikin user", 403)
         if self.repo.get_by_email(email):
             raise UserServiceError("Email udah dipake", 400)
         user_id = self.repo.create(name=name, email=email)

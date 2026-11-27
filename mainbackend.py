@@ -74,7 +74,7 @@ def create_user(user: UserCreate, current=Depends(get_current_user)):
     with get_db() as conn:
         svc = UserService(conn)
         try:
-            data = svc.create_user(user.name, user.email)
+            data = svc.create_user(user.name, user.email, current)
         except UserServiceError as e:
             _handle(e)
     return {"data": data}
